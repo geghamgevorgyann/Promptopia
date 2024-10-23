@@ -1,12 +1,14 @@
-"use client";
+"use client"; 
+
 import Form from "@components/Form";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-const EdithPrompt = () => {
+const EditPrompt = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const promptId = searchParams.get("id");
+console.log(promptId);
 
   const [submitting, setSubmitting] = useState(false);
   const [post, setPost] = useState({
@@ -16,27 +18,40 @@ const EdithPrompt = () => {
 
   useEffect(() => {
     const getPromptDetails = async () => {
-      const response = await fetch(`/api/prompt/${promptId}`);
-      const data = await response.json();
+      if (!promptId) return;
 
-      setPost({
-        prompt: data.prompt,
-        tag: data.tag,
-      });
+      try {
+        const response = await fetch(`/api/prompt/${promptId}`);
+        const data = await response.json();
+
+        setPost({
+          prompt: data.prompt,
+          tag: data.tag,
+        });
+      } catch (error) {
+        console.error("Failed to fetch prompt details:", error);
+      }
     };
 
-    if (promptId) getPromptDetails();
+    getPromptDetails();
   }, [promptId]);
 
-  const updatePrompt = async (e: any) => {
+  const updatePrompt = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
-    if (!promptId) return alert("Prompt ID not found");
+    if (!promptId) {
+      alert("Prompt ID not found");
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const response = await fetch(`/api/prompt/${promptId}`, {
         method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           prompt: post.prompt,
           tag: post.tag,
@@ -47,20 +62,23 @@ const EdithPrompt = () => {
         router.push("/");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Failed to update prompt:", error);
     } finally {
       setSubmitting(false);
     }
   };
+
   return (
-    <Form
-      type="Edit"
-      post={post}
-      setPost={setPost}
-      submitting={submitting}
-      handleSubmit={updatePrompt}
-    />
+    <Suspense fallback={<div>Loading...</div>}>
+      <Form
+        type="Edit"
+        post={post}
+        setPost={setPost}
+        submitting={submitting}
+        handleSubmit={updatePrompt}
+      />
+    </Suspense>
   );
 };
 
-export default EdithPrompt;
+export default EditPrompt;
