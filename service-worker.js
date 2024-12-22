@@ -2,7 +2,7 @@ self.addEventListener('install', (event) => {
     console.log('[Service Worker] Installing...');
     event.waitUntil(
         caches.open('static-cache-v1').then((cache) => {
-            const urlsToCache = ['/', '/assets/images/grid.svg', '/assets/images/logo.svg'];
+            const urlsToCache = ['/'];
             return Promise.all(
                 urlsToCache.map((url) =>
                     cache.add(url).catch((error) => {
