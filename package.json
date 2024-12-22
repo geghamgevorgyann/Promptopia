@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vercel/postgres": "^0.10.0",
     "bcrypt": "^5.1.1",
     "mongodb": "^6.8.0",
     "mongoos": "^0.0.1-security",
